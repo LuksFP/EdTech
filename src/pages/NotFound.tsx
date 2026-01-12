@@ -1,5 +1,7 @@
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { GraduationCap, ArrowLeft } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -9,13 +11,28 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-muted-foreground">Oops! Page not found</p>
-        <a href="/" className="text-primary underline hover:text-primary/90">
-          Return to Home
-        </a>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+      <div className="text-center max-w-md">
+        <div className="flex justify-center mb-6">
+          <div className="flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10">
+            <GraduationCap className="w-10 h-10 text-primary" />
+          </div>
+        </div>
+        
+        <h1 className="text-6xl font-display font-bold text-foreground mb-4">404</h1>
+        <h2 className="text-2xl font-display font-semibold text-foreground mb-2">
+          Página não encontrada
+        </h2>
+        <p className="text-muted-foreground mb-8">
+          A página que você está procurando não existe ou foi movida.
+        </p>
+        
+        <Button asChild>
+          <Link to="/login" className="gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Voltar ao início
+          </Link>
+        </Button>
       </div>
     </div>
   );
