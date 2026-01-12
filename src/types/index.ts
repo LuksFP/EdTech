@@ -7,6 +7,7 @@ export interface User {
   name: string;
   role: UserRole;
   avatar?: string;
+  createdAt?: string;
 }
 
 // Course types
@@ -42,11 +43,51 @@ export interface Enrollment {
   completedAt?: string;
 }
 
+// Review types
+export interface Review {
+  id: string;
+  courseId: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  helpful: number;
+}
+
 // Auth types
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+// Filter types
+export interface CourseFilters {
+  category?: CourseCategory | 'all';
+  status?: CourseStatus | 'all';
+  search?: string;
+}
+
+// Analytics types
+export interface AnalyticsData {
+  date: string;
+  students: number;
+  revenue: number;
+  enrollments: number;
+}
+
+export interface CategoryStats {
+  category: string;
+  courses: number;
+  students: number;
+  revenue: number;
 }
 
 export interface LoginCredentials {

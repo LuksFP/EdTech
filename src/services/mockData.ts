@@ -1,4 +1,4 @@
-import { User, Course, Enrollment } from '@/types';
+import { User, Course, Enrollment, Review, AnalyticsData, CategoryStats } from '@/types';
 
 export const mockUsers: User[] = [
   {
@@ -144,27 +144,135 @@ export const mockStudents: User[] = [
     email: 'joao@email.com',
     name: 'João Santos',
     role: 'student',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop'
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop',
+    createdAt: '2024-01-05'
   },
   {
     id: '3',
     email: 'maria@email.com',
     name: 'Maria Oliveira',
     role: 'student',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop'
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop',
+    createdAt: '2024-01-12'
   },
   {
     id: '4',
     email: 'pedro@email.com',
     name: 'Pedro Costa',
     role: 'student',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop'
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop',
+    createdAt: '2024-02-01'
   },
   {
     id: '5',
     email: 'ana@email.com',
     name: 'Ana Beatriz',
     role: 'student',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop'
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop',
+    createdAt: '2024-02-15'
   }
+];
+
+export const mockReviews: Review[] = [
+  {
+    id: '1',
+    courseId: '1',
+    userId: '2',
+    userName: 'João Santos',
+    userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop',
+    rating: 5,
+    comment: 'Curso excelente! O professor explica muito bem e os exemplos práticos são muito úteis. Recomendo para quem quer se aprofundar em React.',
+    createdAt: '2024-02-10',
+    helpful: 12
+  },
+  {
+    id: '2',
+    courseId: '1',
+    userId: '3',
+    userName: 'Maria Oliveira',
+    userAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop',
+    rating: 4,
+    comment: 'Muito bom! Aprendi bastante sobre hooks e context. Poderia ter mais exercícios práticos.',
+    createdAt: '2024-02-08',
+    helpful: 8
+  },
+  {
+    id: '3',
+    courseId: '2',
+    userId: '2',
+    userName: 'João Santos',
+    userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop',
+    rating: 5,
+    comment: 'Transformou minha visão sobre design! A instrutora é incrível e o conteúdo é muito atualizado.',
+    createdAt: '2024-02-15',
+    helpful: 15
+  },
+  {
+    id: '4',
+    courseId: '2',
+    userId: '4',
+    userName: 'Pedro Costa',
+    userAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop',
+    rating: 5,
+    comment: 'Melhor curso de UX/UI que já fiz. Muito completo e prático!',
+    createdAt: '2024-02-12',
+    helpful: 10
+  },
+  {
+    id: '5',
+    courseId: '3',
+    userId: '5',
+    userName: 'Ana Beatriz',
+    userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop',
+    rating: 4,
+    comment: 'Ótimo para quem está começando em Data Science. Conteúdo bem estruturado.',
+    createdAt: '2024-02-05',
+    helpful: 6
+  },
+  {
+    id: '6',
+    courseId: '3',
+    userId: '3',
+    userName: 'Maria Oliveira',
+    userAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop',
+    rating: 5,
+    comment: 'Excelente didática! Consegui aplicar no trabalho logo após as primeiras aulas.',
+    createdAt: '2024-02-01',
+    helpful: 9
+  },
+  {
+    id: '7',
+    courseId: '4',
+    userId: '2',
+    userName: 'João Santos',
+    userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop',
+    rating: 4,
+    comment: 'Muito prático e direto ao ponto. As estratégias são aplicáveis imediatamente.',
+    createdAt: '2024-02-18',
+    helpful: 5
+  }
+];
+
+// Analytics mock data - dados mensais dos últimos 12 meses
+export const mockAnalyticsData: AnalyticsData[] = [
+  { date: '2025-02', students: 45, revenue: 8955, enrollments: 32 },
+  { date: '2025-03', students: 62, revenue: 12380, enrollments: 48 },
+  { date: '2025-04', students: 78, revenue: 15560, enrollments: 55 },
+  { date: '2025-05', students: 95, revenue: 18905, enrollments: 67 },
+  { date: '2025-06', students: 112, revenue: 22288, enrollments: 82 },
+  { date: '2025-07', students: 145, revenue: 28855, enrollments: 98 },
+  { date: '2025-08', students: 178, revenue: 35422, enrollments: 115 },
+  { date: '2025-09', students: 210, revenue: 41790, enrollments: 142 },
+  { date: '2025-10', students: 256, revenue: 50944, enrollments: 168 },
+  { date: '2025-11', students: 312, revenue: 62088, enrollments: 195 },
+  { date: '2025-12', students: 385, revenue: 76615, enrollments: 228 },
+  { date: '2026-01', students: 452, revenue: 89948, enrollments: 267 }
+];
+
+export const mockCategoryStats: CategoryStats[] = [
+  { category: 'Programação', courses: 2, students: 1250, revenue: 349800 },
+  { category: 'Design', courses: 1, students: 890, revenue: 222411 },
+  { category: 'Data Science', courses: 1, students: 2100, revenue: 629790 },
+  { category: 'Marketing', courses: 1, students: 750, revenue: 134925 },
+  { category: 'Negócios', courses: 1, students: 450, revenue: 103455 }
 ];

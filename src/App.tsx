@@ -15,6 +15,7 @@ import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminCourses from "@/pages/admin/AdminCourses";
 import AdminStudents from "@/pages/admin/AdminStudents";
+import AdminReports from "@/pages/admin/AdminReports";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,7 +61,7 @@ const App = () => (
                 <Route index element={<AdminDashboard />} />
                 <Route path="courses" element={<AdminCourses />} />
                 <Route path="students" element={<AdminStudents />} />
-                <Route path="reports" element={<div className="p-8 text-muted-foreground">Relatórios em breve...</div>} />
+                <Route path="reports" element={<AdminReports />} />
                 <Route path="settings" element={<div className="p-8 text-muted-foreground">Configurações em breve...</div>} />
               </Route>
               
