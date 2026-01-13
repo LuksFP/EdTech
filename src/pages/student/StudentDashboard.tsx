@@ -6,7 +6,8 @@ import { StatsCard } from '@/components/StatsCard';
 import { CourseCard } from '@/components/CourseCard';
 import { CourseFilters } from '@/components/CourseFilters';
 import { CourseModal } from '@/components/CourseModal';
-import { Course, CourseFilters as CourseFiltersType } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Course } from '@/types';
 import { BookOpen, Award, Clock, TrendingUp } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
@@ -22,12 +23,14 @@ const StudentDashboard: React.FC = () => {
     markCourseComplete,
     filters,
     setFilters,
-    getFilteredCourses
+    getFilteredCourses,
+    isLoading
   } = useCourses();
   const { toast } = useToast();
 
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEnrolling, setIsEnrolling] = useState(false);
 
   if (!user) return null;
 
@@ -47,23 +50,61 @@ const StudentDashboard: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleEnroll = (courseId: string) => {
-    enrollInCourse(courseId, user.id);
-    setIsModalOpen(false);
-    toast({
-      title: "Matrícula realizada!",
-      description: "Você foi matriculado no curso com sucesso.",
-    });
+  const handleEnroll = async (courseId: string) => {
+    setIsEnrolling(true);
+    try {
+      await enrollInCourse(courseId, user.id);
+      setIsModalOpen(false);
+      toast({
+        title: "Matrícula realizada!",
+        description: "Você foi matriculado no curso com sucesso.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro na matrícula",
+        description: error.message || "Não foi possível realizar a matrícula.",
+      });
+    } finally {
+      setIsEnrolling(false);
+    }
   };
 
-  const handleMarkComplete = (enrollmentId: string) => {
-    markCourseComplete(enrollmentId);
-    setIsModalOpen(false);
-    toast({
-      title: "Parabéns!",
-      description: "Você concluiu o curso com sucesso! 🎉",
-    });
+  const handleMarkComplete = async (enrollmentId: string) => {
+    try {
+      await markCourseComplete(enrollmentId);
+      setIsModalOpen(false);
+      toast({
+        title: "Parabéns!",
+        description: "Você concluiu o curso com sucesso! 🎉",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error.message || "Não foi possível marcar como concluído.",
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-32 rounded-lg" />
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -152,6 +193,7 @@ const StudentDashboard: React.FC = () => {
                   course={course}
                   onViewDetails={handleViewDetails}
                   onEnroll={handleEnroll}
+                  isEnrolling={isEnrolling}
                 />
               ))}
             </div>
@@ -159,7 +201,9 @@ const StudentDashboard: React.FC = () => {
             {availableCourses.length === 0 && (
               <div className="text-center py-12 bg-muted/50 rounded-lg">
                 <p className="text-muted-foreground">
-                  Nenhum curso encontrado com os filtros selecionados.
+                  {courses.filter(c => c.status === 'published').length === 0
+                    ? "Nenhum curso disponível no momento."
+                    : "Você já está matriculado em todos os cursos disponíveis!"}
                 </p>
               </div>
             )}

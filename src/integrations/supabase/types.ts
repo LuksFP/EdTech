@@ -14,16 +14,208 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      courses: {
+        Row: {
+          category: Database["public"]["Enums"]["course_category"]
+          created_at: string
+          description: string | null
+          duration: string
+          id: string
+          instructor: string
+          lessons: number
+          price: number
+          rating: number
+          status: Database["public"]["Enums"]["course_status"]
+          students_count: number
+          thumbnail: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["course_category"]
+          created_at?: string
+          description?: string | null
+          duration?: string
+          id?: string
+          instructor: string
+          lessons?: number
+          price?: number
+          rating?: number
+          status?: Database["public"]["Enums"]["course_status"]
+          students_count?: number
+          thumbnail?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["course_category"]
+          created_at?: string
+          description?: string | null
+          duration?: string
+          id?: string
+          instructor?: string
+          lessons?: number
+          price?: number
+          rating?: number
+          status?: Database["public"]["Enums"]["course_status"]
+          students_count?: number
+          thumbnail?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      enrollments: {
+        Row: {
+          completed_at: string | null
+          course_id: string
+          enrolled_at: string
+          id: string
+          progress: number
+          status: Database["public"]["Enums"]["enrollment_status"]
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id: string
+          enrolled_at?: string
+          id?: string
+          progress?: number
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string
+          enrolled_at?: string
+          id?: string
+          progress?: number
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string
+          email: string
+          id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string
+          course_id: string
+          created_at: string
+          helpful: number
+          id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          course_id: string
+          created_at?: string
+          helpful?: number
+          id?: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          course_id?: string
+          created_at?: string
+          helpful?: number
+          id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "student"
+      course_category:
+        | "programming"
+        | "design"
+        | "business"
+        | "marketing"
+        | "data-science"
+      course_status: "draft" | "published" | "archived"
+      enrollment_status: "active" | "completed" | "paused"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +342,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "student"],
+      course_category: [
+        "programming",
+        "design",
+        "business",
+        "marketing",
+        "data-science",
+      ],
+      course_status: ["draft", "published", "archived"],
+      enrollment_status: ["active", "completed", "paused"],
+    },
   },
 } as const

@@ -15,6 +15,8 @@ interface CourseCardProps {
   showAdminActions?: boolean;
   onEdit?: (course: Course) => void;
   onStatusChange?: (courseId: string, status: 'published' | 'draft' | 'archived') => void;
+  onDelete?: (courseId: string) => void;
+  isEnrolling?: boolean;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -45,7 +47,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   onMarkComplete,
   showAdminActions,
   onEdit,
-  onStatusChange
+  onStatusChange,
+  onDelete,
+  isEnrolling
 }) => {
   const isEnrolled = !!enrollment;
   const isCompleted = enrollment?.status === 'completed';

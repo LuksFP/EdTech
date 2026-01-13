@@ -24,6 +24,7 @@ interface CourseFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (courseData: Omit<Course, 'id' | 'createdAt' | 'rating' | 'studentsCount'>) => void;
+  isSaving?: boolean;
 }
 
 const categories: { value: CourseCategory; label: string }[] = [
@@ -44,7 +45,8 @@ export const CourseForm: React.FC<CourseFormProps> = ({
   course,
   isOpen,
   onClose,
-  onSave
+  onSave,
+  isSaving
 }) => {
   const [formData, setFormData] = useState({
     title: '',
