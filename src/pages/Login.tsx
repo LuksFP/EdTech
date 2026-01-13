@@ -5,37 +5,89 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GraduationCap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { GraduationCap, Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
+
+// Validation schemas
+const loginSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres')
+});
+
+const signupSchema = z.object({
+  name: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres').max(100, 'Nome muito longo'),
+  email: z.string().email('Email inválido').max(255, 'Email muito longo'),
+  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres')
+});
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState('login');
+  const { login, signup, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const success = await login({ email, password });
+    // Validate input
+    const validation = loginSchema.safeParse({ email, password });
+    if (!validation.success) {
+      toast({
+        variant: "destructive",
+        title: "Erro de validação",
+        description: validation.error.errors[0].message,
+      });
+      return;
+    }
     
-    if (success) {
-      const savedUser = localStorage.getItem('edtech_user');
-      if (savedUser) {
-        const user = JSON.parse(savedUser);
-        toast({
-          title: "Login realizado com sucesso!",
-          description: `Bem-vindo(a), ${user.name}`,
-        });
-        navigate(user.role === 'admin' ? '/admin' : '/student');
-      }
+    const result = await login({ email, password });
+    
+    if (result.success) {
+      toast({
+        title: "Login realizado com sucesso!",
+        description: "Bem-vindo(a) de volta",
+      });
     } else {
       toast({
         variant: "destructive",
         title: "Erro no login",
-        description: "Email ou senha incorretos. Use: admin@edtech.com ou aluno@edtech.com com senha 123456",
+        description: result.error || "Email ou senha incorretos",
+      });
+    }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate input
+    const validation = signupSchema.safeParse({ name, email, password });
+    if (!validation.success) {
+      toast({
+        variant: "destructive",
+        title: "Erro de validação",
+        description: validation.error.errors[0].message,
+      });
+      return;
+    }
+    
+    const result = await signup(email, password, name);
+    
+    if (result.success) {
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Bem-vindo(a) à EdTech",
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Erro ao criar conta",
+        description: result.error || "Tente novamente mais tarde",
       });
     }
   };
@@ -94,7 +146,7 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Right side - Login form */}
+      {/* Right side - Login/Signup form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-3 justify-center mb-8">
@@ -106,64 +158,132 @@ const Login: React.FC = () => {
 
           <Card className="border-0 shadow-xl">
             <CardHeader className="space-y-1 text-center">
-              <CardTitle className="text-2xl font-display">Bem-vindo de volta!</CardTitle>
+              <CardTitle className="text-2xl font-display">
+                {activeTab === 'login' ? 'Bem-vindo de volta!' : 'Crie sua conta'}
+              </CardTitle>
               <CardDescription>
-                Entre com suas credenciais para acessar sua conta
+                {activeTab === 'login' 
+                  ? 'Entre com suas credenciais para acessar sua conta'
+                  : 'Preencha os dados para começar a aprender'}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="login">Entrar</TabsTrigger>
+                  <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+                </TabsList>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
+                <TabsContent value="login">
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="login-email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                  {isLoading ? 'Entrando...' : 'Entrar'}
-                </Button>
-              </form>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Senha</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="login-password"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10 pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
 
-              <div className="mt-6 p-4 bg-muted rounded-lg">
-                <p className="text-sm font-medium text-center mb-2">Credenciais de teste:</p>
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <p><strong>Admin:</strong> admin@edtech.com / 123456</p>
-                  <p><strong>Aluno:</strong> aluno@edtech.com / 123456</p>
-                </div>
-              </div>
+                    <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                      {isLoading ? 'Entrando...' : 'Entrar'}
+                    </Button>
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="signup">
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Nome completo</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="signup-name"
+                          type="text"
+                          placeholder="Seu nome"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Senha</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="signup-password"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="Mínimo 6 caracteres"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10 pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                      {isLoading ? 'Criando conta...' : 'Criar conta'}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>
