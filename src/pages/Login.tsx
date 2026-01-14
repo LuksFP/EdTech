@@ -28,9 +28,17 @@ const Login: React.FC = () => {
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
-  const { login, signup, isLoading } = useAuth();
+  const { login, signup, isLoading, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      const redirectPath = user.role === 'admin' ? '/admin' : '/student';
+      navigate(redirectPath, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,8 +59,9 @@ const Login: React.FC = () => {
     if (result.success) {
       toast({
         title: "Login realizado com sucesso!",
-        description: "Bem-vindo(a) de volta",
+        description: "Redirecionando...",
       });
+      // Navigation will happen via useEffect when user state updates
     } else {
       toast({
         variant: "destructive",
@@ -81,8 +90,9 @@ const Login: React.FC = () => {
     if (result.success) {
       toast({
         title: "Conta criada com sucesso!",
-        description: "Bem-vindo(a) à EdTech",
+        description: "Redirecionando...",
       });
+      // Navigation will happen via useEffect when user state updates
     } else {
       toast({
         variant: "destructive",
