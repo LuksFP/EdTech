@@ -156,6 +156,29 @@ const Login: React.FC = () => {
             <span className="font-display font-bold text-2xl">EdTech</span>
           </div>
 
+          {/* Demo Credentials Card */}
+          <Card className="border-2 border-dashed border-primary/30 bg-primary/5 mb-4">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-sm font-semibold text-primary">Credenciais de Teste</span>
+              </div>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Admin:</span>
+                  <code className="bg-muted px-2 py-0.5 rounded text-xs">admin@edtech.com / 123456</code>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Aluno:</span>
+                  <code className="bg-muted px-2 py-0.5 rounded text-xs">aluno@edtech.com / 123456</code>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Cadastre-se com estes emails para testar os diferentes papéis
+              </p>
+            </CardContent>
+          </Card>
+
           <Card className="border-0 shadow-xl">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-display">
