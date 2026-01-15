@@ -7,13 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, Users, DollarSign, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-
-interface StudentProfile {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-}
+import { StudentProfile } from '@/types';
 
 const CHART_COLORS = {
   programming: 'hsl(221, 83%, 53%)',

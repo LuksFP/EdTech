@@ -11,6 +11,7 @@ import { RoleRoute } from "@/routes/RoleRoute";
 
 // Pages
 import Login from "@/pages/Login";
+import Profile from "@/pages/Profile";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import CourseDetails from "@/pages/CourseDetails";
 import AdminLayout from "@/pages/admin/AdminLayout";
@@ -46,6 +47,16 @@ const App = () => (
                       <RoleRoute allowedRoles={['student']}>
                         <StudentDashboard />
                       </RoleRoute>
+                    </PrivateRoute>
+                  } 
+                />
+
+                {/* Profile - Both roles can access */}
+                <Route 
+                  path="/profile" 
+                  element={
+                    <PrivateRoute>
+                      <Profile />
                     </PrivateRoute>
                   } 
                 />

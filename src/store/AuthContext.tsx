@@ -7,6 +7,7 @@ interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -179,8 +180,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    if (session?.user) {
+      const userData = await fetchUserData(session.user.id, session.user.email || '');
+      setAuthState(prev => ({
+        ...prev,
+        user: userData,
+      }));
+    }
+  }, [session, fetchUserData]);
+
   return (
-    <AuthContext.Provider value={{ ...authState, login, signup, logout }}>
+    <AuthContext.Provider value={{ ...authState, login, signup, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

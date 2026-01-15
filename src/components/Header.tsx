@@ -60,7 +60,7 @@ export const Header: React.FC = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2">
+                <DropdownMenuItem className="gap-2" onClick={() => navigate('/profile')}>
                   <User className="w-4 h-4" />
                   <span>Perfil</span>
                 </DropdownMenuItem>

@@ -7,21 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Mail, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCourses } from '@/store/CourseContext';
-
-interface StudentProfile {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-}
-
-interface EnrollmentWithCourse {
-  id: string;
-  course_id: string;
-  status: string;
-  progress: number;
-  course_title?: string;
-}
+import { StudentProfile, EnrollmentWithCourse } from '@/types';
 
 const AdminStudents: React.FC = () => {
   const [search, setSearch] = useState('');
