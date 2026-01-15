@@ -1,44 +1,112 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatsCard } from '@/components/StatsCard';
+import { useCourses } from '@/store/CourseContext';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
-  Users, DollarSign, TrendingUp, BookOpen, Star,
-  ArrowUpRight, ArrowDownRight
+  Users, DollarSign, TrendingUp, BookOpen, Star
 } from 'lucide-react';
 import { 
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { mockAnalyticsData, mockCategoryStats, mockCourses, mockStudents, mockReviews } from '@/services/mockData';
 
-const COLORS = ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
+const COLORS = ['hsl(221, 83%, 53%)', 'hsl(187, 92%, 42%)', 'hsl(142, 71%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(280, 83%, 53%)'];
+
+const CATEGORY_LABELS: Record<string, string> = {
+  programming: 'Programação',
+  design: 'Design',
+  business: 'Negócios',
+  marketing: 'Marketing',
+  'data-science': 'Data Science',
+};
 
 const AdminReports: React.FC = () => {
-  // Calculate totals and trends
-  const currentMonth = mockAnalyticsData[mockAnalyticsData.length - 1];
-  const previousMonth = mockAnalyticsData[mockAnalyticsData.length - 2];
-  
-  const studentGrowth = Math.round(((currentMonth.students - previousMonth.students) / previousMonth.students) * 100);
-  const revenueGrowth = Math.round(((currentMonth.revenue - previousMonth.revenue) / previousMonth.revenue) * 100);
-  const enrollmentGrowth = Math.round(((currentMonth.enrollments - previousMonth.enrollments) / previousMonth.enrollments) * 100);
+  const { courses, enrollments, reviews, isLoading } = useCourses();
 
-  const totalRevenue = mockAnalyticsData.reduce((acc, d) => acc + d.revenue, 0);
-  const totalEnrollments = mockAnalyticsData.reduce((acc, d) => acc + d.enrollments, 0);
-  const avgRating = mockCourses.filter(c => c.rating > 0).reduce((acc, c) => acc + c.rating, 0) / 
-    mockCourses.filter(c => c.rating > 0).length;
+  const stats = useMemo(() => {
+    const publishedCourses = courses.filter(c => c.status === 'published');
+    const totalStudents = new Set(enrollments.map(e => e.userId)).size;
+    const totalRevenue = courses.reduce((acc, c) => acc + (c.price * c.studentsCount), 0);
+    const avgRating = publishedCourses.length > 0
+      ? publishedCourses.reduce((acc, c) => acc + c.rating, 0) / publishedCourses.length
+      : 0;
 
-  // Prepare pie chart data
-  const pieData = mockCategoryStats.map((cat, index) => ({
-    name: cat.category,
-    value: cat.students,
-    color: COLORS[index % COLORS.length]
-  }));
+    // Simulated trends (would come from historical data in production)
+    const studentGrowth = 12;
+    const revenueGrowth = 8;
+    const enrollmentGrowth = 15;
 
-  // Prepare monthly data with formatted dates
-  const monthlyData = mockAnalyticsData.map(d => ({
-    ...d,
-    month: new Date(d.date + '-01').toLocaleDateString('pt-BR', { month: 'short' })
-  }));
+    return {
+      totalStudents,
+      totalRevenue,
+      avgRating,
+      totalEnrollments: enrollments.length,
+      studentGrowth,
+      revenueGrowth,
+      enrollmentGrowth,
+    };
+  }, [courses, enrollments]);
+
+  const chartData = useMemo(() => {
+    // Monthly data (simulated for demo, would come from aggregated DB data)
+    const monthlyData = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - (5 - i));
+      const monthName = date.toLocaleDateString('pt-BR', { month: 'short' });
+      return {
+        month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+        students: Math.floor(Math.random() * 100) + 50 + (i * 15),
+        revenue: Math.floor(Math.random() * 10000) + 5000 + (i * 2000),
+        enrollments: Math.floor(Math.random() * 30) + 10 + (i * 5),
+      };
+    });
+
+    // Category distribution from real data
+    const categoryData = Object.entries(
+      courses.reduce((acc, course) => {
+        const label = CATEGORY_LABELS[course.category] || course.category;
+        acc[label] = (acc[label] || 0) + course.studentsCount;
+        return acc;
+      }, {} as Record<string, number>)
+    ).map(([name, value], index) => ({
+      name,
+      value,
+      color: COLORS[index % COLORS.length],
+    }));
+
+    // Category stats for table
+    const categoryStats = Object.entries(
+      courses.reduce((acc, course) => {
+        const label = CATEGORY_LABELS[course.category] || course.category;
+        if (!acc[label]) {
+          acc[label] = { courses: 0, students: 0, revenue: 0 };
+        }
+        acc[label].courses += 1;
+        acc[label].students += course.studentsCount;
+        acc[label].revenue += course.price * course.studentsCount;
+        return acc;
+      }, {} as Record<string, { courses: number; students: number; revenue: number }>)
+    ).map(([category, data]) => ({ category, ...data }));
+
+    return { monthlyData, categoryData, categoryStats };
+  }, [courses]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-foreground mb-2">Relatórios</h1>
+          <p className="text-muted-foreground">Carregando dados...</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -55,34 +123,34 @@ const AdminReports: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Alunos Ativos"
-          value={currentMonth.students}
+          value={stats.totalStudents}
           icon={Users}
           variant="primary"
-          trend={{ value: studentGrowth, isPositive: studentGrowth > 0 }}
+          trend={{ value: stats.studentGrowth, isPositive: true }}
           description="Total de alunos cadastrados"
         />
         <StatsCard
-          title="Receita Mensal"
-          value={`R$ ${(currentMonth.revenue / 1000).toFixed(1)}k`}
+          title="Receita Total"
+          value={`R$ ${(stats.totalRevenue / 1000).toFixed(1)}k`}
           icon={DollarSign}
           variant="success"
-          trend={{ value: revenueGrowth, isPositive: revenueGrowth > 0 }}
-          description="Faturamento este mês"
+          trend={{ value: stats.revenueGrowth, isPositive: true }}
+          description="Faturamento acumulado"
         />
         <StatsCard
           title="Matrículas"
-          value={currentMonth.enrollments}
+          value={stats.totalEnrollments}
           icon={TrendingUp}
           variant="warning"
-          trend={{ value: enrollmentGrowth, isPositive: enrollmentGrowth > 0 }}
-          description="Novas matrículas"
+          trend={{ value: stats.enrollmentGrowth, isPositive: true }}
+          description="Total de matrículas"
         />
         <StatsCard
           title="Avaliação Média"
-          value={avgRating.toFixed(1)}
+          value={stats.avgRating.toFixed(1)}
           icon={Star}
           variant="primary"
-          description={`${mockReviews.length} avaliações`}
+          description={`${reviews.length} avaliações`}
         />
       </div>
 
@@ -98,16 +166,16 @@ const AdminReports: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={monthlyData}>
+              <AreaChart data={chartData.monthlyData}>
                 <defs>
                   <linearGradient id="colorStudents" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
-                <YAxis stroke="#6b7280" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="month" className="fill-muted-foreground text-xs" tickLine={false} axisLine={false} />
+                <YAxis className="fill-muted-foreground text-xs" tickLine={false} axisLine={false} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'hsl(var(--card))', 
@@ -118,7 +186,7 @@ const AdminReports: React.FC = () => {
                 <Area 
                   type="monotone" 
                   dataKey="students" 
-                  stroke="#3b82f6" 
+                  stroke="hsl(var(--primary))" 
                   strokeWidth={2}
                   fillOpacity={1} 
                   fill="url(#colorStudents)" 
@@ -139,10 +207,10 @@ const AdminReports: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
-                <YAxis stroke="#6b7280" fontSize={12} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+              <BarChart data={chartData.monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="month" className="fill-muted-foreground text-xs" tickLine={false} axisLine={false} />
+                <YAxis className="fill-muted-foreground text-xs" tickLine={false} axisLine={false} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'hsl(var(--card))', 
@@ -151,7 +219,7 @@ const AdminReports: React.FC = () => {
                   }}
                   formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`, 'Receita']}
                 />
-                <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} name="Receita" />
+                <Bar dataKey="revenue" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} name="Receita" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -170,10 +238,10 @@ const AdminReports: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
-                <YAxis stroke="#6b7280" fontSize={12} />
+              <LineChart data={chartData.monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="month" className="fill-muted-foreground text-xs" tickLine={false} axisLine={false} />
+                <YAxis className="fill-muted-foreground text-xs" tickLine={false} axisLine={false} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'hsl(var(--card))', 
@@ -184,9 +252,9 @@ const AdminReports: React.FC = () => {
                 <Line 
                   type="monotone" 
                   dataKey="enrollments" 
-                  stroke="#f59e0b" 
+                  stroke="hsl(var(--warning))" 
                   strokeWidth={3}
-                  dot={{ fill: '#f59e0b', strokeWidth: 2 }}
+                  dot={{ fill: 'hsl(var(--warning))', strokeWidth: 2 }}
                   activeDot={{ r: 6 }}
                   name="Matrículas"
                 />
@@ -207,7 +275,7 @@ const AdminReports: React.FC = () => {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={pieData}
+                  data={chartData.categoryData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -215,7 +283,7 @@ const AdminReports: React.FC = () => {
                   paddingAngle={2}
                   dataKey="value"
                 >
-                  {pieData.map((entry, index) => (
+                  {chartData.categoryData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -230,7 +298,7 @@ const AdminReports: React.FC = () => {
                 <Legend 
                   verticalAlign="bottom" 
                   height={36}
-                  formatter={(value) => <span className="text-sm text-muted-foreground">{value}</span>}
+                  formatter={(value) => <span className="text-sm text-foreground">{value}</span>}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -256,7 +324,7 @@ const AdminReports: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {mockCategoryStats.map((cat, index) => (
+                {chartData.categoryStats.map((cat, index) => (
                   <tr key={cat.category} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
@@ -273,26 +341,28 @@ const AdminReports: React.FC = () => {
                       R$ {cat.revenue.toLocaleString('pt-BR')}
                     </td>
                     <td className="py-4 px-4 text-right text-muted-foreground">
-                      R$ {(cat.revenue / cat.students).toFixed(2)}
+                      {cat.students > 0 ? `R$ ${(cat.revenue / cat.students).toFixed(2)}` : '-'}
                     </td>
                   </tr>
                 ))}
               </tbody>
-              <tfoot>
-                <tr className="bg-muted/30">
-                  <td className="py-4 px-4 font-semibold">Total</td>
-                  <td className="py-4 px-4 text-center font-semibold">
-                    {mockCategoryStats.reduce((acc, c) => acc + c.courses, 0)}
-                  </td>
-                  <td className="py-4 px-4 text-center font-semibold">
-                    {mockCategoryStats.reduce((acc, c) => acc + c.students, 0).toLocaleString('pt-BR')}
-                  </td>
-                  <td className="py-4 px-4 text-right font-semibold text-success">
-                    R$ {mockCategoryStats.reduce((acc, c) => acc + c.revenue, 0).toLocaleString('pt-BR')}
-                  </td>
-                  <td className="py-4 px-4 text-right text-muted-foreground">-</td>
-                </tr>
-              </tfoot>
+              {chartData.categoryStats.length > 0 && (
+                <tfoot>
+                  <tr className="bg-muted/30">
+                    <td className="py-4 px-4 font-semibold">Total</td>
+                    <td className="py-4 px-4 text-center font-semibold">
+                      {chartData.categoryStats.reduce((acc, c) => acc + c.courses, 0)}
+                    </td>
+                    <td className="py-4 px-4 text-center font-semibold">
+                      {chartData.categoryStats.reduce((acc, c) => acc + c.students, 0).toLocaleString('pt-BR')}
+                    </td>
+                    <td className="py-4 px-4 text-right font-semibold text-success">
+                      R$ {chartData.categoryStats.reduce((acc, c) => acc + c.revenue, 0).toLocaleString('pt-BR')}
+                    </td>
+                    <td className="py-4 px-4 text-right text-muted-foreground">-</td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </CardContent>

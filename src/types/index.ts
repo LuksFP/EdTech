@@ -10,6 +10,13 @@ export interface User {
   createdAt?: string;
 }
 
+export interface StudentProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
 // Course types
 export type CourseStatus = 'published' | 'draft' | 'archived';
 export type CourseCategory = 'programming' | 'design' | 'business' | 'marketing' | 'data-science';
@@ -41,6 +48,14 @@ export interface Enrollment {
   progress: number;
   enrolledAt: string;
   completedAt?: string;
+}
+
+export interface EnrollmentWithCourse {
+  id: string;
+  course_id: string;
+  status: string;
+  progress: number;
+  course_title?: string;
 }
 
 // Review types
@@ -88,16 +103,4 @@ export interface CategoryStats {
   courses: number;
   students: number;
   revenue: number;
-}
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-// Filter types
-export interface CourseFilters {
-  category?: CourseCategory | 'all';
-  status?: CourseStatus | 'all';
-  search?: string;
 }
