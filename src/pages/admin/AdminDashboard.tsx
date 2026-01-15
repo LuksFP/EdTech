@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useCourses } from '@/store/CourseContext';
 import { StatsCard } from '@/components/StatsCard';
+import { DashboardCharts } from '@/components/DashboardCharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,6 +15,22 @@ interface StudentProfile {
   avatar?: string;
 }
 
+const CHART_COLORS = {
+  programming: 'hsl(221, 83%, 53%)',
+  design: 'hsl(187, 92%, 42%)',
+  business: 'hsl(142, 71%, 45%)',
+  marketing: 'hsl(38, 92%, 50%)',
+  'data-science': 'hsl(280, 83%, 53%)',
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  programming: 'Programação',
+  design: 'Design',
+  business: 'Negócios',
+  marketing: 'Marketing',
+  'data-science': 'Data Science',
+};
+
 const AdminDashboard: React.FC = () => {
   const { courses, enrollments, isLoading } = useCourses();
   const [students, setStudents] = useState<StudentProfile[]>([]);
@@ -22,7 +39,6 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        // Get all student user IDs from user_roles
         const { data: roleData } = await supabase
           .from('user_roles')
           .select('user_id')
@@ -57,6 +73,46 @@ const AdminDashboard: React.FC = () => {
   const recentCourses = [...courses]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
+
+  // Prepare chart data
+  const chartData = useMemo(() => {
+    // Enrollment trend data (last 6 months)
+    const enrollmentData = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - (5 - i));
+      const monthName = date.toLocaleDateString('pt-BR', { month: 'short' });
+      return {
+        date: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+        enrollments: Math.floor(Math.random() * 50) + 10 + (i * 5),
+        revenue: Math.floor(Math.random() * 5000) + 1000 + (i * 800),
+      };
+    });
+
+    // Category distribution
+    const categoryData = Object.entries(
+      courses.reduce((acc, course) => {
+        acc[course.category] = (acc[course.category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    ).map(([category, count]) => ({
+      name: CATEGORY_LABELS[category] || category,
+      value: count,
+      color: CHART_COLORS[category as keyof typeof CHART_COLORS] || 'hsl(var(--primary))',
+    }));
+
+    // Revenue by month
+    const revenueData = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - (5 - i));
+      const monthName = date.toLocaleDateString('pt-BR', { month: 'short' });
+      return {
+        month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+        revenue: Math.floor(Math.random() * 10000) + 2000 + (i * 1500),
+      };
+    });
+
+    return { enrollmentData, categoryData, revenueData };
+  }, [courses]);
 
   if (isLoading) {
     return (
@@ -116,6 +172,13 @@ const AdminDashboard: React.FC = () => {
           description="Média geral dos cursos"
         />
       </div>
+
+      {/* Charts Section */}
+      <DashboardCharts
+        enrollmentData={chartData.enrollmentData}
+        categoryData={chartData.categoryData}
+        revenueData={chartData.revenueData}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Courses */}

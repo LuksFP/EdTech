@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Course, Enrollment } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -51,8 +52,13 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   onDelete,
   isEnrolling
 }) => {
+  const navigate = useNavigate();
   const isEnrolled = !!enrollment;
   const isCompleted = enrollment?.status === 'completed';
+
+  const handleViewDetails = () => {
+    navigate(`/course/${course.id}`);
+  };
 
   return (
     <Card className="group overflow-hidden card-hover bg-card border-border/50">
@@ -132,7 +138,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
           <Button
             variant="outline"
             className="flex-1"
-            onClick={() => onViewDetails(course)}
+            onClick={handleViewDetails}
           >
             Ver Detalhes
           </Button>
