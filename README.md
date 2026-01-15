@@ -9,20 +9,24 @@ Uma aplicação fullstack completa de gerenciamento de cursos online, desenvolvi
 ### 👨‍🎓 Portal do Aluno
 - **Dashboard personalizado** com cursos matriculados e progresso
 - **Catálogo de cursos** com filtros por categoria e busca
+- **Página de detalhes** com módulos, descrição e matrícula
 - **Sistema de avaliações** para feedback dos cursos
 - **Acompanhamento de progresso** em tempo real
+- **Tema claro/escuro** com transições suaves
 
 ### 👨‍💼 Painel Administrativo
 - **CRUD completo de cursos** (criar, editar, deletar)
+- **Dashboard analítico** com gráficos Recharts
+- **Visualização de métricas** (matrículas, receita, categorias)
 - **Gestão de alunos** com listagem e métricas
-- **Dashboard analítico** com estatísticas em tempo real
 - **Relatórios e insights** sobre a plataforma
 
 ### 🔐 Segurança
 - **Row Level Security (RLS)** em todas as tabelas
-- **Autenticação robusta** com Supabase Auth
+- **Autenticação robusta** com Lovable Cloud
 - **Sistema de roles** (admin/student) com controle de acesso
 - **Validação de inputs** com Zod em todos os formulários
+- **Políticas de segurança** para proteção de dados
 
 ## 🛠️ Tech Stack
 
@@ -32,8 +36,10 @@ Uma aplicação fullstack completa de gerenciamento de cursos online, desenvolvi
 | TypeScript | Supabase | Vite |
 | Tailwind CSS | Edge Functions | ESLint |
 | Shadcn/UI | RLS Policies | |
-| React Query | | |
-| React Router | | |
+| React Query | Triggers | |
+| React Router | Functions | |
+| Recharts | | |
+| next-themes | | |
 
 ## 🏗️ Arquitetura
 
@@ -41,10 +47,13 @@ Uma aplicação fullstack completa de gerenciamento de cursos online, desenvolvi
 src/
 ├── components/       # Componentes reutilizáveis
 │   ├── ui/          # Componentes Shadcn/UI
+│   ├── DashboardCharts.tsx  # Gráficos do admin
+│   ├── ThemeToggle.tsx      # Toggle de tema
 │   └── ...          # Componentes específicos
 ├── pages/           # Páginas da aplicação
 │   ├── admin/       # Rotas administrativas
-│   └── student/     # Rotas do aluno
+│   ├── student/     # Rotas do aluno
+│   └── CourseDetails.tsx  # Detalhes do curso
 ├── store/           # Contextos (Auth, Course)
 ├── routes/          # Proteção de rotas
 ├── hooks/           # Custom hooks
@@ -88,6 +97,9 @@ npm run dev
 
 ## 🎯 Diferenciais
 
+- ✅ Tema claro/escuro com transições suaves
+- ✅ Gráficos interativos com Recharts
+- ✅ Página de detalhes com módulos do curso
 - ✅ Código limpo e bem organizado
 - ✅ TypeScript com tipagem completa
 - ✅ Design responsivo mobile-first
