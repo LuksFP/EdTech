@@ -117,7 +117,3 @@ npm run dev
 ## 📄 Licença
 
 Este projeto está sob a licença MIT.
-
----
-
-Desenvolvido com 💜 usando [Lovable](https://lovable.dev)
