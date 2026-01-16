@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ReviewCard } from '@/components/ReviewCard';
 import { ReviewForm } from '@/components/ReviewForm';
 import { useToast } from '@/hooks/use-toast';
+import { downloadCertificate } from '@/lib/certificate';
 import { 
   ArrowLeft, 
   Clock, 
@@ -19,7 +20,8 @@ import {
   Users, 
   CheckCircle2,
   PlayCircle,
-  Award
+  Award,
+  Download
 } from 'lucide-react';
 
 const CourseDetails: React.FC = () => {
@@ -83,6 +85,12 @@ const CourseDetails: React.FC = () => {
         description: "Não foi possível marcar como concluído",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDownloadCertificate = () => {
+    if (course && enrollment && user) {
+      downloadCertificate(course, enrollment, user.name);
     }
   };
 
@@ -332,9 +340,18 @@ const CourseDetails: React.FC = () => {
                       </div>
                       
                       {enrollment.status === 'completed' ? (
-                        <div className="flex items-center justify-center gap-2 text-success py-4">
-                          <Award className="w-5 h-5" />
-                          <span className="font-medium">Curso Concluído!</span>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-center gap-2 text-success py-4">
+                            <Award className="w-5 h-5" />
+                            <span className="font-medium">Curso Concluído!</span>
+                          </div>
+                          <Button 
+                            className="w-full gap-2"
+                            onClick={handleDownloadCertificate}
+                          >
+                            <Download className="w-4 h-4" />
+                            Baixar Certificado
+                          </Button>
                         </div>
                       ) : (
                         <>
@@ -344,9 +361,10 @@ const CourseDetails: React.FC = () => {
                           </Button>
                           <Button 
                             variant="outline" 
-                            className="w-full"
+                            className="w-full gap-2"
                             onClick={handleComplete}
                           >
+                            <CheckCircle2 className="w-4 h-4" />
                             Marcar como Concluído
                           </Button>
                         </>

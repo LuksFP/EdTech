@@ -11,6 +11,8 @@ Uma aplicação fullstack completa de gerenciamento de cursos online, desenvolvi
 - **Catálogo de cursos** com filtros por categoria e busca
 - **Página de detalhes** com módulos, descrição e matrícula
 - **Sistema de avaliações** para feedback dos cursos
+- **Certificados PDF** gerados automaticamente ao concluir cursos
+- **Upload de avatar** com qualquer tipo de imagem
 - **Acompanhamento de progresso** em tempo real
 - **Tema claro/escuro** com transições suaves
 
@@ -27,6 +29,7 @@ Uma aplicação fullstack completa de gerenciamento de cursos online, desenvolvi
 - **Sistema de roles** (admin/student) com controle de acesso
 - **Validação de inputs** com Zod em todos os formulários
 - **Políticas de segurança** para proteção de dados
+- **Storage seguro** para avatares com políticas por usuário
 
 ## 🛠️ Tech Stack
 
@@ -38,8 +41,9 @@ Uma aplicação fullstack completa de gerenciamento de cursos online, desenvolvi
 | Shadcn/UI | RLS Policies | |
 | React Query | Triggers | |
 | React Router | Functions | |
-| Recharts | | |
+| Recharts | Storage Buckets | |
 | next-themes | | |
+| jsPDF | | |
 
 ## 🏗️ Arquitetura
 
@@ -97,6 +101,8 @@ npm run dev
 
 ## 🎯 Diferenciais
 
+- ✅ Certificados PDF personalizados para cursos concluídos
+- ✅ Upload de avatar com storage seguro
 - ✅ Tema claro/escuro com transições suaves
 - ✅ Gráficos interativos com Recharts
 - ✅ Página de detalhes com módulos do curso

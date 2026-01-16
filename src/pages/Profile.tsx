@@ -7,29 +7,29 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { AvatarUpload } from '@/components/AvatarUpload';
+import { downloadCertificate } from '@/lib/certificate';
 import { 
   ArrowLeft, 
-  Camera, 
   Save, 
   User, 
   Mail, 
   Calendar,
   BookOpen,
   Award,
-  TrendingUp
+  TrendingUp,
+  Download
 } from 'lucide-react';
 import { z } from 'zod';
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100, 'Nome muito longo'),
-  avatar: z.string().url('URL inválida').optional().or(z.literal('')),
 });
 
 const Profile: React.FC = () => {
@@ -42,9 +42,10 @@ const Profile: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
-    avatar: user?.avatar || '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const completedEnrollments = enrollments.filter(e => e.userId === user?.id && e.status === 'completed');
 
   const userEnrollments = enrollments.filter(e => e.userId === user?.id);
   const completedCourses = userEnrollments.filter(e => e.status === 'completed').length;
@@ -59,6 +60,19 @@ const Profile: React.FC = () => {
     setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
+  const handleAvatarChange = (newUrl: string) => {
+    refreshUser();
+  };
+
+  const handleDownloadCertificate = (courseId: string) => {
+    const course = courses.find(c => c.id === courseId);
+    const enrollment = enrollments.find(e => e.courseId === courseId && e.userId === user?.id);
+    
+    if (course && enrollment && user) {
+      downloadCertificate(course, enrollment, user.name);
+    }
+  };
+
   const handleSave = async () => {
     try {
       const validated = profileSchema.parse(formData);
@@ -68,7 +82,6 @@ const Profile: React.FC = () => {
         .from('profiles')
         .update({
           name: validated.name,
-          avatar: validated.avatar || null,
         })
         .eq('id', user?.id);
 
@@ -106,7 +119,6 @@ const Profile: React.FC = () => {
   const handleCancel = () => {
     setFormData({
       name: user?.name || '',
-      avatar: user?.avatar || '',
     });
     setErrors({});
     setIsEditing(false);
@@ -141,20 +153,14 @@ const Profile: React.FC = () => {
           {/* Profile Card */}
           <Card className="lg:col-span-1">
             <CardHeader className="text-center">
-              <div className="relative inline-block mx-auto mb-4">
-                <Avatar className="w-24 h-24 border-4 border-primary/20">
-                  <AvatarImage src={isEditing ? formData.avatar : user.avatar} alt={user.name} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                    {user.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                {isEditing && (
-                  <div className="absolute bottom-0 right-0 p-1 bg-primary rounded-full">
-                    <Camera className="w-4 h-4 text-primary-foreground" />
-                  </div>
-                )}
-              </div>
-              <CardTitle className="font-display">{user.name}</CardTitle>
+              <AvatarUpload
+                userId={user.id}
+                currentAvatar={user.avatar}
+                userName={user.name}
+                onAvatarChange={handleAvatarChange}
+                disabled={false}
+              />
+              <CardTitle className="font-display mt-4">{user.name}</CardTitle>
               <CardDescription>{user.email}</CardDescription>
               <Badge variant="outline" className="mt-2 capitalize">
                 {user.role === 'admin' ? 'Administrador' : 'Aluno'}
@@ -227,21 +233,6 @@ const Profile: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="avatar">URL do Avatar</Label>
-                  <Input
-                    id="avatar"
-                    name="avatar"
-                    value={formData.avatar}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    placeholder="https://exemplo.com/avatar.jpg"
-                  />
-                  {errors.avatar && (
-                    <p className="text-sm text-destructive">{errors.avatar}</p>
-                  )}
-                </div>
-
                 {isEditing && (
                   <div className="flex gap-2 pt-4">
                     <Button onClick={handleSave} disabled={isSaving} className="gap-2">
@@ -299,6 +290,56 @@ const Profile: React.FC = () => {
                       </div>
                     </>
                   )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Certificates Section */}
+            {user.role === 'student' && completedEnrollments.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Award className="w-5 h-5" />
+                    Seus Certificados
+                  </CardTitle>
+                  <CardDescription>
+                    Baixe os certificados dos cursos que você concluiu
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {completedEnrollments.map(enrollment => {
+                      const course = courses.find(c => c.id === enrollment.courseId);
+                      if (!course) return null;
+                      return (
+                        <div 
+                          key={enrollment.id}
+                          className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-success/10">
+                              <Award className="w-5 h-5 text-success" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{course.title}</p>
+                              <p className="text-sm text-muted-foreground">
+                                Concluído em {enrollment.completedAt || 'recente'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownloadCertificate(course.id)}
+                            className="gap-2"
+                          >
+                            <Download className="w-4 h-4" />
+                            Baixar PDF
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </CardContent>
               </Card>
             )}
