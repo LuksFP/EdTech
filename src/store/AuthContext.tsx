@@ -80,7 +80,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      // Handle invalid/expired refresh tokens
+      if (error && error.message?.includes('Refresh Token')) {
+        console.warn('Invalid refresh token, signing out...');
+        supabase.auth.signOut();
+        setAuthState({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false
+        });
+        return;
+      }
+      
       setSession(session);
       
       if (session?.user) {
