@@ -44,7 +44,7 @@ const App = () => (
                   path="/student" 
                   element={
                     <PrivateRoute>
-                      <RoleRoute allowedRoles={['student']}>
+                      <RoleRoute allowedRoles={['student', 'admin']}>
                         <StudentDashboard />
                       </RoleRoute>
                     </PrivateRoute>
